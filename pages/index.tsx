@@ -1,5 +1,4 @@
-
-import React from "react";
+import React, { useCallback } from "react";
 import { BsTwitterX } from "react-icons/bs";
 import { MdHomeFilled } from "react-icons/md";
 import { RiNotification4Line } from "react-icons/ri";
@@ -9,7 +8,10 @@ import { BiEnvelope } from "react-icons/bi";
 import { FaRegUser } from "react-icons/fa6";
 import { CgMoreO } from "react-icons/cg";
 import FeedCard from "@/components/FeedCard";
-
+import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
+import { toast } from "react-hot-toast";
+import { graphqlClient } from "@/clients/api";
+import { verifyUserGoogleTokenQuery } from "@/graphql/query/user";
 
 interface twitterSidebarButtons {
   title: String;
@@ -52,6 +54,35 @@ const sidebarMenuItems: twitterSidebarButtons[] = [
 ];
 
 export default function Home() {
+  const handleLoginWithGoogle = useCallback(
+    async (cred: CredentialResponse) => {
+      const googleToken = cred.credential;
+      if (!googleToken) return toast.error("Google token not found");
+
+      try {
+        const { verifyGoogleToken } = await graphqlClient.request(
+          verifyUserGoogleTokenQuery,
+          { token: googleToken }
+        );
+
+        if (verifyGoogleToken) {
+          toast.success("LoggedIn Successfully");
+        } else {
+          toast.error("Verification failed");
+          console.error("GraphQL request error:", verifyGoogleToken);
+        }
+
+        if (verifyGoogleToken) {
+          window.localStorage.setItem("__twitter_token", verifyGoogleToken);
+        }
+      } catch (error) {
+        console.error("GraphQL request error:", error);
+        toast.error("Login Error");
+      }
+    },
+    []
+  );
+
   return (
     <div>
       <div className="grid grid-cols-12 h-screen w-screen px-56">
@@ -78,7 +109,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <div className="col-span-7 border-r-[0.1px] border-l-[0.1px] h-screen overflow-scroll overflow-x-hidden border border-gray-600">
+        <div className="col-span-6 border-r-[0.1px] border-l-[0.1px] h-screen overflow-scroll overflow-x-hidden border border-gray-600">
           <FeedCard />
           <FeedCard />
           <FeedCard />
@@ -91,7 +122,12 @@ export default function Home() {
           <FeedCard />
           <FeedCard />
         </div>
-        <div className="col-span-3"></div>
+        <div className="col-span-3">
+          <div className="p-4 bg-slate-800 rounded-lg">
+            <h1 className="text-xl">Need an account?</h1>
+            <GoogleLogin onSuccess={handleLoginWithGoogle} />
+          </div>
+        </div>
       </div>
     </div>
   );
