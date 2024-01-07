@@ -1,7 +1,7 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { BsTwitterX } from "react-icons/bs";
-import { MdHomeFilled } from "react-icons/md";
+import { MdHomeFilled, MdOutlineLogout } from "react-icons/md";
 import { RiNotification4Line } from "react-icons/ri";
 import { FiSearch } from "react-icons/fi";
 import { IoBookmarkOutline } from "react-icons/io5";
@@ -102,6 +102,13 @@ const TwitterLayout: React.FC<TwitterLayoutProps> = (props) => {
     [queryClient]
   );
 
+  const handleLogout = async () => {
+    window.localStorage.removeItem("__twitter_token");
+
+    window.location.href = "/";
+    toast.success("Logged Out");
+  };
+
   return (
     <div>
       <div className="grid grid-cols-12 h-screen w-screen sm:px-56">
@@ -126,14 +133,16 @@ const TwitterLayout: React.FC<TwitterLayoutProps> = (props) => {
                   </li>
                 ))}
               </ul>
-              <div className="mt-5 py-6">
-                <button className="hidden sm:block bg-[#1d9bf0] rounded-full p-3 w-full text-[18px] font-semibold">
-                  Post
-                </button>
-                <button className="block sm:hidden bg-[#1d9bf0] rounded-full p-2 py-1 text-[10px] font-semibold">
-                  Post
-                </button>
-              </div>
+
+              {user && (
+                <div
+                  onClick={handleLogout}
+                  className="mt-5 py-6 flex justify-start items-center gap-4 hover:text-red-600 rounded-full px-5 cursor-pointer transition-all w-fit"
+                >
+                  <MdOutlineLogout className="text-2xl" />
+                  Logout
+                </div>
+              )}
             </div>
           </div>
           {user && (
@@ -159,11 +168,47 @@ const TwitterLayout: React.FC<TwitterLayoutProps> = (props) => {
           {props.children}
         </div>
         <div className="col-span-0 sm:col-span-3">
-          {!user && (
-            <div className="p-4 bg-slate-800 rounded-lg">
-              <h1 className="text-xl">Need an account?</h1>
+          {!user ? (
+            <div className="px-1 py-4 pr-4 bg-slate-800 rounded-lg">
+              <h1 className="text-xl font-bold mb-2">Need an account?</h1>
               <GoogleLogin onSuccess={handleLoginWithGoogle} />
             </div>
+          ) : user.recommendedUser?.length !== 0 ? (
+            <div className="px-4 py-3 bg-slate-900 rounded-lg">
+              <h1 className="text-xl font-bold my-2 mx-3 mb-5">
+                {" "}
+                Who to follow{" "}
+              </h1>
+              {user?.recommendedUser?.map((el) => (
+                <div
+                  key={el?.id}
+                  className="flex items-center gap-3 mt-5 hover:bg-slate-800"
+                >
+                  {el?.profileImageURL && (
+                    <Image
+                      src={el.profileImageURL}
+                      alt="user-image"
+                      height={50}
+                      width={50}
+                      className="rounded-full"
+                    />
+                  )}
+                  <div className="flex items-center gap-6">
+                    <div className="text-lg">
+                      {el?.firstName} {el?.lastName}
+                    </div>
+                    <Link
+                      href={`/${el?.id}`}
+                      className="bg-white text-black rounded-full px-4 py-1 text-sm font-semibold"
+                    >
+                      View
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div></div>
           )}
         </div>
       </div>
