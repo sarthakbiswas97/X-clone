@@ -112,7 +112,7 @@ const TwitterLayout: React.FC<TwitterLayoutProps> = (props) => {
   return (
     <div>
       <div className="grid grid-cols-12 h-screen w-screen sm:px-56">
-        <div className="col-span-2 sm:col-span-3 pt-1 px-4 flex sm:justify-end pr-4 relative">
+        <div className="col-span-2 flex sm:col-span-3 sm:justify-center relative">
           <div>
             <div className="text-3xl h-fit ml-2 hover:bg-gray-800 rounded-full p-3 cursor-pointer transition-all w-fit">
               <BsTwitterX />
@@ -140,7 +140,7 @@ const TwitterLayout: React.FC<TwitterLayoutProps> = (props) => {
                   className="mt-5 py-6 flex justify-start items-center gap-4 hover:text-red-600 rounded-full px-5 cursor-pointer transition-all w-fit"
                 >
                   <MdOutlineLogout className="text-2xl" />
-                  Logout
+                  <div className="hidden sm:inline">Logout</div>
                 </div>
               )}
             </div>
@@ -169,15 +169,14 @@ const TwitterLayout: React.FC<TwitterLayoutProps> = (props) => {
         </div>
         <div className="col-span-0 sm:col-span-3">
           {!user ? (
-            <div className="px-1 py-4 pr-4 bg-slate-800 rounded-lg">
-              <h1 className="text-xl font-bold mb-2">Need an account?</h1>
+            <div className="px-1 py-4 pr-4 sm:bg-slate-800 rounded-lg">
+              <h1 className="hidden text-xl font-bold mb-2">Need an account?</h1>
               <GoogleLogin onSuccess={handleLoginWithGoogle} />
             </div>
           ) : user.recommendedUser?.length !== 0 ? (
-            <div className="px-4 py-3 bg-slate-900 rounded-lg">
+            <div className="hidden sm:block px-4 py-3 bg-slate-900 rounded-lg">
               <h1 className="text-xl font-bold my-2 mx-3 mb-5">
-                {" "}
-                Who to follow{" "}
+                Who to follow
               </h1>
               {user?.recommendedUser?.map((el) => (
                 <div
